@@ -192,7 +192,7 @@ function render(){const v=stack[stack.length-1],m=$('#m'),st=m.scrollTop;
  $('#nav').style.display=v&&v.full?'none':'flex';
  $('#nav').innerHTML=[['saldos'],['totais'],['+'],['tags'],['menu']].map(a=>a[0]==='+'?'<button class="plus" onclick="addSheet()">+</button>':`<button class="${tab==a[0]&&!v?'on':''}" onclick="setTab('${a[0]}')"><i>${NAVI[a[0]]}</i>${a[0]}</button>`).join('');
  $('#top').innerHTML=!v&&tab!=='menu'?mesBar()+(tab==='saldos'?`<div class="fl"><span class="th">dia</span><div class="pill" onclick="filtroSheet('s')"><span class="l">${fIco(FILT)} ${fNome(FILT)}</span>⌄</div><span class="th r">saldos</span></div>`:''):'';
- m.className=v&&v.hz?'hzm':'';m.innerHTML=v?v.fn():({saldos,totais,tags,menu})[tab]();if(SL){m.classList.add(SL>0?'slr':'sll');SL=0}
+ m.className=v&&v.hz?'hzm':'';m.innerHTML=v?v.fn():({saldos,totais,tags,menu})[tab]();if(SL){m.classList.add(SL<0?'slr':'sll');SL=0}
  if(pend&&!v&&tab==='saldos'){pend=false;const e=$('#hj');m.scrollTop=e?e.offsetTop:0}else m.scrollTop=st;applyTheme()}
 const salBg=v=>v<0?`background:rgba(229,100,100,${(.4+.6*Math.min(1,-v/500)).toFixed(2)})`:v>=1000?'background:var(--pos)':'';
 const valTipo=(k,c)=>{const v=(DAY[k]||[])[c]||0;return(c===2&&!v&&FCD[k])?{v:FCD[k]}:{v}};
@@ -308,7 +308,7 @@ function horizonte(){const hs=new Date(hoje.getFullYear(),hoje.getMonth(),1,12);
 
 var TX=0,TY=0,LX=0,LY=0,SL=0;
 const SEQ=[0,1,2,3,4,'todas'];
-function nextF(c,st){let i=SEQ.indexOf(c);i=st>0?(i+1)%SEQ.length:Math.max(0,i-1);return SEQ[i]}
+function nextF(c,st){let i=SEQ.indexOf(c);i=st<0?Math.min(SEQ.length-1,i+1):Math.max(0,i-1);return SEQ[i]}
 document.addEventListener('touchstart',e=>{const t=e.touches[0];TX=LX=t.clientX;TY=LY=t.clientY},{passive:true});
 document.addEventListener('touchmove',e=>{const t=e.touches[0];LX=t.clientX;LY=t.clientY},{passive:true});
 function swipeEnd(e){
