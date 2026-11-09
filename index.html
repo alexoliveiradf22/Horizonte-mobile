@@ -161,6 +161,13 @@ function dueDate(k,c){const d=parse(k);let y=d.getFullYear(),m=d.getMonth();if(d
 /* ---------- interface ---------- */
 const dot=(i,o,pv,lg)=>`<span class="dot ${pv?'pv':o?'':'t-'+CATS[i].v} ${lg?'lg':''}">${CATS[i].ic}</span>`;
 const TODAS='<svg width="24" height="24" viewBox="0 0 24 24" fill="#888"><circle cx="12" cy="5" r="3.2"/><circle cx="4.5" cy="12" r="2.6"/><circle cx="19.5" cy="12" r="2.6"/><circle cx="12" cy="19.5" r="2.6"/></svg>';
+function hzIcon(){
+ const bk={DAY,LIST,PRE,FCD,XD,SAL};let vals=[];
+ try{buildSal(new Date(hoje.getFullYear(),hoje.getMonth(),1,12));
+  for(let i=0;i<9;i++){vals.push(SAL[key(new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()+i,12))]||0)}}
+ finally{({DAY,LIST,PRE,FCD,XD,SAL}=bk)}
+ const fill=v=>v<0?`fill="rgba(229,100,100,${(.4+.6*Math.min(1,-v/500)).toFixed(2)})"`:v>=1000?'style="fill:var(--pos)"':'fill="#f9e8b9"';
+ return '<svg width="32" height="32" viewBox="0 0 34 34"><clipPath id="gcl"><rect width="34" height="34" rx="5"/></clipPath><g clip-path="url(#gcl)"><rect width="34" height="34" fill="#fff"/>'+vals.map((v,i)=>`<rect x="${(i%3)*11.8}" y="${Math.floor(i/3)*11.8}" width="10.4" height="10.4" ${fill(v)}/>`).join('')+'</g></svg>'}
 const GRID='<svg width="32" height="32" viewBox="0 0 34 34"><rect width="34" height="34" rx="5" fill="#f9e8b9"/><rect x="11.5" width="11" height="22" fill="#adf7bc"/><path d="M11.5 0v34M22.5 0v34M0 11.5h34M0 22.5h34" stroke="#fff" stroke-width="1.6"/></svg>';
 
 const sv=p=>`<svg class="si" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
@@ -185,7 +192,7 @@ function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clea
 const go=v=>{stack.push(v);render()},back=()=>{stack.pop();render()},setTab=t=>{tab=t;stack=[];pend=t==='saldos';render()};
 function mv(n){M+=n;if(M<0){M=11;Y--}if(M>11){M=0;Y++}pend=true;render()}
 function goHoje(){Y=hoje.getFullYear();M=hoje.getMonth();tab='saldos';stack=[];pend=true;render()}
-const mesBar=()=>`<div class="bar"><button class="cal" onclick="goHoje()">${CAL(hoje.getDate())}</button><span style="display:flex;align-items:center;gap:22px"><button class="ic" onclick="mv(-1)">‹</button><b>${AB[M]}/${String(Y).slice(2)}</b><button class="ic" onclick="mv(1)">›</button></span><button class="ic" style="padding:0" onclick="go({full:1,hz:1,fn:horizonte})">${GRID}</button></div>`;
+const mesBar=()=>`<div class="bar"><button class="cal" onclick="goHoje()">${CAL(hoje.getDate())}</button><span style="display:flex;align-items:center;gap:22px"><button class="ic" onclick="mv(-1)">‹</button><b>${AB[M]}/${String(Y).slice(2)}</b><button class="ic" onclick="mv(1)">›</button></span><button class="ic" style="padding:0" onclick="go({full:1,hz:1,fn:horizonte})">${hzIcon()}</button></div>`;
 function render(){const v=stack[stack.length-1],m=$('#m'),st=m.scrollTop;
  if(!v||v.full){ /* dados do mês atual */ }
  prep(v&&v.dia?dia[0]:Y,v&&v.dia?dia[1]:M);
@@ -218,8 +225,8 @@ function setF(sc,f){sc==='s'?FILT=f:dfilt=f;closeS();render()}
 function addSheet(dt){if(typeof dt!=='string')dt=null;sheet(`<div class="hd"><span>adicionar</span><span><button class="ic" onclick="alert('toque no tipo de lançamento que quer registrar')">?</button>${xb}</span></div>`+CATS.map((c,i)=>`<div class="li" style="padding:18px 24px" onclick="openMov(${i},${dt?`'${dt}'`:'null'})"><div>${dot(i,0,0,1)}<span><b style="font-size:20px">${c.sg}</b><small style="font-size:17px">${c.ds}</small></span></div></div>`).join(''))}
 function openMov(cat,date){F={id:null,occK:0,v:'',cat,desc:'',date:date||today,card:null,venc:null,rep:'nao',parcelas:2,ate:'infinito',vezes:2,tags:[]};renderForm()}
 function openEdit(id,k){const it=S.items.find(x=>x.id===id);if(!it)return;const e=effOcc(it,k),t=it.rep||'nao';
- F={id,occK:k,v:fmtV(t==='parcelado'?it.value:e.value),cat:CK[e.cat],desc:e.desc||'',date:(it.compra&&k===0)?it.compra:e.date,card:it.card||null,venc:it.card?e.date:null,rep:t,parcelas:it.parcelas||2,ate:it.ate||'infinito',vezes:it.vezes||2,tags:[...e.tags]};renderForm()}
-function recVenc(){const c=cardOf(F.card);F.venc=c?dueDate(F.date,c):null}
+ F={id,occK:k,v:fmtV(t==='parcelado'?it.value:e.value),cat:CK[e.cat],desc:e.desc||'',date:e.date,card:it.card||null,venc:null,rep:t,parcelas:it.parcelas||2,ate:it.ate||'infinito',vezes:it.vezes||2,tags:[...e.tags]};renderForm()}
+function recVenc(){if(F.id)return;const c=cardOf(F.card);F.venc=c?dueDate(F.date,c):null}
 function renderForm(){
  const c=CATS[F.cat],ed=!!F.id,card=cardOf(F.card);
  const row=(ic,t,val,fn)=>`<div class="fr" onclick="${fn}">${ic}<span class="ft">${t}</span>${val?`<span class="fvl">${val}</span>`:''}${IC.chev}</div>`;
@@ -229,7 +236,7 @@ function renderForm(){
  <div class="fr" style="cursor:text">${IC.pencil}<input class="fd" placeholder="descrição" value="${esc(F.desc)}" oninput="F.desc=this.value"></div>
  ${F.cat===4?row(IC.card,card?esc(card.n):'escolha um cartão','','pCard()'):''}
  ${row(IC.cal,'data',fmtD(F.date),'pDate()')}
- ${F.cat===4&&card&&F.venc?row(IC.cal,'vencimento',fmtD(F.venc),'pVenc()'):''}
+ ${!ed&&F.cat===4&&card&&F.venc?row(IC.cal,'vencimento',fmtD(F.venc),'pVenc()'):''}
  ${ed?'':row(IC.calrep,REP[F.rep],'','pRep()')}
  ${!ed&&['mensal','semanal','diario'].includes(F.rep)?row(IC.undo,F.ate==='vezes'?'número de vezes':'a perder de vista','','pAte()'):''}
  ${!ed&&(F.rep==='parcelado'||(F.rep!=='nao'&&F.ate==='vezes'))?`<div class="fr" style="cursor:default">${IC.hash}<span class="ft" id="stl">${stTx()}</span><span class="stp"><button onclick="stp(-1)">−</button><button onclick="stp(1)">+</button></span></div>`:''}
@@ -258,7 +265,7 @@ function pTags(){TQ2='';sheet(phd('tags')+`<div class="pd"><input placeholder="f
 function togTag(n){const i=F.tags.indexOf(n);i>-1?F.tags.splice(i,1):F.tags.push(n)}
 function saveItem(){const v=parseFloat(String(F.v).replace(/\./g,'').replace(',','.'));if(!(v>0))return toast('informe o valor');
  const cardOn=F.cat===4&&F.card&&cardOf(F.card)&&F.venc;
- if(F.id){const f={value:Math.round(v*100)/100,cat:CATS[F.cat].k,desc:F.desc.trim(),tags:[...F.tags],date:cardOn?F.venc:F.date,compra:cardOn?F.date:'',card:cardOn?F.card:null},it=S.items.find(x=>x.id===F.id),k=F.occK;if(!it)return closeS();
+ if(F.id){const it=S.items.find(x=>x.id===F.id),k=F.occK,f={value:Math.round(v*100)/100,cat:CATS[F.cat].k,desc:F.desc.trim(),tags:[...F.tags],date:F.date,compra:(F.cat===4&&F.card&&it)?(it.compra||''):'',card:F.cat===4?F.card:null};if(!it)return closeS();
   const fin=m=>{applyEdit(it,k,m,f);save();closeS();render()};if(isSeries(it)&&it.rep!=='parcelado'){choice('atualizar repetições',[['one','somente esta'],['next','esta e as próximas'],...(k>0?[['all','todas']]:[])],fin);return}fin('all');return}
  const p=F.rep==='parcelado'?Math.max(2,Math.min(600,+F.parcelas||2)):0;
  S.items.push({id:uid(),created:Date.now(),date:cardOn?F.venc:F.date,compra:cardOn?F.date:'',card:cardOn?F.card:null,cat:CATS[F.cat].k,desc:F.desc.trim(),value:Math.round(v*100)/100,tags:F.tags,rep:F.rep,parcelas:p,ate:F.rep==='nao'||F.rep==='parcelado'?'infinito':F.ate,vezes:Math.max(2,Math.min(600,+F.vezes||2))});save();closeS();render()}
