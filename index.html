@@ -88,7 +88,7 @@ main{touch-action:pan-y}.ep{touch-action:manipulation}
 </style></head><body><div id="app"><div id="top"></div><main id="m"></main><nav id="nav"></nav></div><div id="ov"></div><div id="fs"></div><div id="toast"></div><div id="auth"><div id="acard"></div></div>
 <script>
 /* Mesmo servidor e mesmo formato de dados do app "horizonte de saldos" */
-const API_URL='https://script.google.com/macros/s/AKfycbzm_IxeTW-9uH_cOLDb1StVOSBeVPIx3fcluzTbXsYddx4SH3iH4qT1_NDN77s70OLl/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbwXtjPGWh2imY_uvqRGOBPl4Z_anTPc37xQkxQX27ROJV8U_GTw6GQQJk9aM5b9VO5T-g/exec';
 const CATS=[["entrada","entradas","entrada","salário, comissão, vales","↙",1,"e"],["saida","saídas","saída","gastos fixos, boletos, aluguel","↗",-1,"s"],["diario","diários","diário","gastos variáveis, compras","D",-1,"d"],["economia","economias","economia","reserva, investimento","E",-1,"ec"],["cartao","gastos com cartão","gasto com cartão","gastos ou total da fatura","C",-1,"c"]].map(a=>({k:a[0],pl:a[1],sg:a[2],ds:a[3],ic:a[4],sign:a[5],v:a[6]}));
 const CK=Object.fromEntries(CATS.map((c,i)=>[c.k,i]));
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'],AB=MESES.map(m=>m.slice(0,3));
