@@ -85,10 +85,14 @@ html,body,#m,#top{touch-action:pan-y;overscroll-behavior-x:none}
 main{touch-action:pan-y}.ep{touch-action:manipulation}
 @keyframes sr{from{transform:translateX(26px);opacity:.25}to{transform:none;opacity:1}}@keyframes sll{from{transform:translateX(-26px);opacity:.25}to{transform:none;opacity:1}}
 .slr{animation:sr .22s ease}.sll{animation:sll .22s ease}
+.cht{font-size:22px;font-weight:700;padding:2px 4px 16px}
+.btn.oc{background:none;border:2px solid var(--line);color:var(--fg);font-size:15px;padding:14px;margin-top:12px}
+.btn.oc.dl{border-color:#f0b4b4;color:#e05555}
+.ov.c .sh{width:calc(100% - 40px);max-width:440px;border-radius:28px;padding:30px 26px 18px;border:1px solid var(--line)}
 </style></head><body><div id="app"><div id="top"></div><main id="m"></main><nav id="nav"></nav></div><div id="ov"></div><div id="fs"></div><div id="toast"></div><div id="auth"><div id="acard"></div></div>
 <script>
 /* Mesmo servidor e mesmo formato de dados do app "horizonte de saldos" */
-const API_URL='https://script.google.com/macros/s/AKfycbwXtjPGWh2imY_uvqRGOBPl4Z_anTPc37xQkxQX27ROJV8U_GTw6GQQJk9aM5b9VO5T-g/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbzm_IxeTW-9uH_cOLDb1StVOSBeVPIx3fcluzTbXsYddx4SH3iH4qT1_NDN77s70OLl/exec';
 const CATS=[["entrada","entradas","entrada","salário, comissão, vales","↙",1,"e"],["saida","saídas","saída","gastos fixos, boletos, aluguel","↗",-1,"s"],["diario","diários","diário","gastos variáveis, compras","D",-1,"d"],["economia","economias","economia","reserva, investimento","E",-1,"ec"],["cartao","gastos com cartão","gasto com cartão","gastos ou total da fatura","C",-1,"c"]].map(a=>({k:a[0],pl:a[1],sg:a[2],ds:a[3],ic:a[4],sign:a[5],v:a[6]}));
 const CK=Object.fromEntries(CATS.map((c,i)=>[c.k,i]));
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'],AB=MESES.map(m=>m.slice(0,3));
@@ -248,7 +252,11 @@ function stUp(){const e=$('#stl');if(e)e.textContent=stTx()}
 function stp(d){const k=F.rep==='parcelado'?'parcelas':'vezes';F[k]=Math.max(2,Math.min(600,(+F[k]||2)+d));stUp()}
 const phd=t=>`<div class="hd"><span>${t}</span>${xb}</div>`;
 function pCat(){sheet(phd('categoria')+CATS.map((c,i)=>`<div class="li" onclick="F.cat=${i};recVenc();closeP();renderForm()"><span>${dot(i)}<b>${c.sg}</b></span><span>${F.cat===i?'✓':''}</span></div>`).join(''))}
-function pCard(){sheet(phd('cartão')+S.cards.map(c=>`<div class="li" onclick="F.card='${c.id}';recVenc();closeP();renderForm()"><span><b>${esc(c.n)}</b></span><span>${F.card===c.id?'✓':''}</span></div>`).join('')+`<div class="li" onclick="F.card=null;F.venc=null;closeP();renderForm()"><span><b>sem cartão</b></span><span>${!F.card?'✓':''}</span></div>`+(S.cards.length?'':'<div class="li"><small>cadastre um cartão em menu → cartões de crédito</small></div>'))}
+const CARDP='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="16" height="12" rx="2.5"/><path d="M2.5 10h16M6 14h4M19.5 15v6M16.5 18h6"/></svg>';
+const cardHd=()=>`<div class="hd"><span>cartão</span><span style="display:flex;align-items:center;gap:4px"><button class="ic" onclick="cardFormIn()" aria-label="adicionar cartão">${CARDP}</button>${xb}</span></div>`;
+function cardFormIn(){sheet(`<div class="hd"><span>adicionar cartão</span>${xb}</div><div class="pd"><input id="cn" placeholder="nome do cartão" autocomplete="off"><input id="cf" type="number" inputmode="numeric" min="1" max="31" placeholder="dia do fechamento (1 a 31)"><input id="cv" type="number" inputmode="numeric" min="1" max="31" placeholder="dia do vencimento (1 a 31)"><button class="btn" onclick="saveCardIn()">adicionar</button></div>`)}
+function saveCardIn(){const n=$('#cn').value.trim(),c=Math.round(+$('#cf').value),v=Math.round(+$('#cv').value);if(!n||!(c>=1&&c<=31)||!(v>=1&&v<=31))return toast('preencha o nome e os dias (de 1 a 31)');const id='c'+Date.now().toString(36);S.cards.push({id,n,c,v});save();F.card=id;recVenc();closeP();renderForm()}
+function pCard(){sheet(cardHd()+S.cards.map(c=>`<div class="li" onclick="F.card='${c.id}';recVenc();closeP();renderForm()"><span><b>${esc(c.n)}</b></span><span>${F.card===c.id?'✓':''}</span></div>`).join('')+`<div class="li" onclick="F.card=null;F.venc=null;closeP();renderForm()"><span><b>sem cartão</b></span><span>${!F.card?'✓':''}</span></div>`+(S.cards.length?'':'<div class="li"><small>nenhum cartão cadastrado. toque no ícone de cartão com + no topo para cadastrar.</small></div>'))}
 let CY=0,CM=0,VT=null,TQ2='';
 function pDate(){const d=parse(F.date);CY=d.getFullYear();CM=d.getMonth();calS()}
 function calS(){const off=new Date(CY,CM,1).getDay(),cells=[];for(let i=0;i<42;i++){const d=new Date(CY,CM,1-off+i,12),k=key(d);cells.push(`<button class="cd ${d.getMonth()!==CM?'o':''} ${k===F.date?'s':''} ${k===today?'t':''}" onclick="F.date='${k}';recVenc();closeP();renderForm()">${d.getDate()}</button>`)}
@@ -266,14 +274,14 @@ function togTag(n){const i=F.tags.indexOf(n);i>-1?F.tags.splice(i,1):F.tags.push
 function saveItem(){const v=parseFloat(String(F.v).replace(/\./g,'').replace(',','.'));if(!(v>0))return toast('informe o valor');
  const cardOn=F.cat===4&&F.card&&cardOf(F.card)&&F.venc;
  if(F.id){const it=S.items.find(x=>x.id===F.id),k=F.occK,f={value:Math.round(v*100)/100,cat:CATS[F.cat].k,desc:F.desc.trim(),tags:[...F.tags],date:F.date,compra:(F.cat===4&&F.card&&it)?(it.compra||''):'',card:F.cat===4?F.card:null};if(!it)return closeS();
-  const fin=m=>{applyEdit(it,k,m,f);save();closeS();render()};if(isSeries(it)&&it.rep!=='parcelado'){choice('atualizar repetições',[['one','somente esta'],['next','esta e as próximas'],...(k>0?[['all','todas']]:[])],fin);return}fin('all');return}
+  const fin=m=>{applyEdit(it,k,m,f);save();closeS();render()};if(isSeries(it)&&it.rep!=='parcelado'){choice('atualizar repetidas',[['one','atualizar somente esta'],['next','atualizar esta e as próximas'],...(k>0?[['all','atualizar todas']]:[])],fin);return}fin('all');return}
  const p=F.rep==='parcelado'?Math.max(2,Math.min(600,+F.parcelas||2)):0;
  S.items.push({id:uid(),created:Date.now(),date:cardOn?F.venc:F.date,compra:cardOn?F.date:'',card:cardOn?F.card:null,cat:CATS[F.cat].k,desc:F.desc.trim(),value:Math.round(v*100)/100,tags:F.tags,rep:F.rep,parcelas:p,ate:F.rep==='nao'||F.rep==='parcelado'?'infinito':F.ate,vezes:Math.max(2,Math.min(600,+F.vezes||2))});save();closeS();render()}
-function choice(t,opts,fn){CBF=fn;sheet(`<div class="hd"><span>${t}</span>${xb}</div><div class="pd">${opts.map(([k,l])=>`<button class="btn ${t.startsWith('apagar')?'o':''}" onclick="pick('${k}')">${l}</button>`).join('')}</div>`,1)}
+function choice(t,opts,fn){CBF=fn;const del=t.startsWith('apagar');sheet(`<div class="cht">${t}</div>${opts.map(([k,l])=>`<button class="btn oc ${del?'dl':''}" onclick="pick('${k}')">${l}</button>`).join('')}<button class="btn g" onclick="closeP()">cancelar</button>`,1)}
 const pick=k=>{const f=CBF;CBF=null;closeP();if(f)f(k)};
 function askDel(){const it=S.items.find(x=>x.id===F.id),k=F.occK;if(!it)return;const done=()=>{save();closeS();render()};
- if(isSeries(it))choice('apagar repetições',[['one','somente esta'],['next','esta e as próximas'],['all','todas']],m=>{delOcc(it,k,m);done()});else confirmS('apagar movimentação','essa ação não poderá ser desfeita.','apagar',()=>{S.items=S.items.filter(x=>x!==it);done()})}
-function confirmS(t,m,b,fn){CBF=fn;sheet(`<b style="font-size:20px">${t}</b><p style="color:var(--mut)">${m}</p><button class="btn o" onclick="const f=CBF;CBF=null;closeP();f()">${b}</button><button class="btn g" onclick="closeP()">cancelar</button>`,1)}
+ if(isSeries(it))choice('apagar repetidas',[['one','apagar somente esta'],['next','apagar esta e as próximas'],['all','apagar todas']],m=>{delOcc(it,k,m);done()});else confirmS('apagar movimentação','essa ação não poderá ser desfeita.','apagar',()=>{S.items=S.items.filter(x=>x!==it);done()})}
+function confirmS(t,m,b,fn){CBF=fn;sheet(`<div class="cht">${t}</div><p style="color:var(--mut);margin:0 4px 6px;line-height:1.45">${m}</p><button class="btn oc dl" onclick="const f=CBF;CBF=null;closeP();f()">${b}</button><button class="btn g" onclick="closeP()">cancelar</button>`,1)}
 function totais(){const ym=Y+'-'+pad(M+1),t=monthSum(ym),pd=prevDia(),dias=dim(Y,M),hj=Y===hoje.getFullYear()&&M===hoje.getMonth(),el=hj?hoje.getDate():dias;let rest=0,pv=0;Object.keys(FCD).forEach(k=>{if(k.slice(0,7)===ym){rest++;pv+=FCD[k]}});
  const tp=monthSum(ym,'p'),te=monthSum(ym,'e'),tc=monthSum(ym,'c'),td=monthSum(ym,'d'),perf=tp[0]-tp[1]-tp[2]-tp[3]-tp[4]-pv,custo=tc[1]+tc[2]+tc[4]+pv,eco=te[0]>0?te[3]/te[0]*100:0,P='<span class="dot pv">D</span>';
  return`<div class="sec">cálculos do mês</div>
